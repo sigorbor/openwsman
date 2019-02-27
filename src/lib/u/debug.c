@@ -106,7 +106,7 @@ static void call_handlers(debug_level_e level, char *str)
 }
 
 
-void debug_full(debug_level_e level, const char *format, ...)
+int debug_full(debug_level_e level, const char *format, ...)
 {
 	va_list args;
 	char *str;
@@ -128,7 +128,7 @@ void debug_full(debug_level_e level, const char *format, ...)
 
 
 
-void
+int
 debug_full_verbose(debug_level_e level,
 		   char *file,
 		   int line, const char *proc, const char *format, ...)
