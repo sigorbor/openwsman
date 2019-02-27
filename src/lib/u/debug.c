@@ -112,7 +112,7 @@ void debug_full(debug_level_e level, const char *format, ...)
 	char *str;
 
 	if (handlers == NULL) {
-		return;
+		return 0;
 	}
 
 	va_start(args, format);
@@ -122,6 +122,8 @@ void debug_full(debug_level_e level, const char *format, ...)
 	call_handlers(level, str);
 
 	u_free(str);
+
+	return 1;
 }
 
 
@@ -136,7 +138,7 @@ debug_full_verbose(debug_level_e level,
 	char *body;
 
 	if (handlers == NULL) {
-		return;
+		return 0;
 	}
 
 	va_start(args, format);
@@ -149,4 +151,6 @@ debug_full_verbose(debug_level_e level,
 	call_handlers(level, str);
 
 	u_free(str);
+
+	return 1;
 }

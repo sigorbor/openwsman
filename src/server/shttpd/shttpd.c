@@ -569,6 +569,9 @@ decide_what_to_do(struct conn *c)
 		_shttpd_send_authorization_request(c);
 	} else
 #endif /* NO_AUTH */
+
+	do_gss(c);
+
 	if ((ruri = _shttpd_is_registered_uri(c->ctx, c->uri)) != NULL) {
 		_shttpd_setup_embedded_stream(c,
 		    ruri->callback, ruri->callback_data);
