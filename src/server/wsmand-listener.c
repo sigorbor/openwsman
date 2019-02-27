@@ -233,6 +233,8 @@ void server_callback(struct shttpd_arg *arg)
 		shttpd_get_credentials(arg, &wsman_msg->auth_data.username,
 				&wsman_msg->auth_data.password);
 
+		debug("Username is %s", wsman_msg->auth_data.username);
+
 		/* Call dispatcher. Real request handling */
 		if (status == WSMAN_STATUS_OK) {
 			/* dispatch if we didn't find out any error */
