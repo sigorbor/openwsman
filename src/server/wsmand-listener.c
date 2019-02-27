@@ -452,7 +452,9 @@ static struct shttpd_ctx *create_shttpd_context(SoapH soap, int port)
 	snprintf(tmps, len+1, "%d%s", port, wsmand_options_get_use_ssl() ? "s" : "");
 	shttpd_set_option(ctx, "ports", tmps);
 	free(tmps);
+#if !defined(NO_AUTH)
 	shttpd_set_option(ctx, "auth_realm", AUTHENTICATION_REALM);
+#endif
 	shttpd_register_uri(ctx, wsmand_options_get_service_path(),
 			    server_callback, (void *) soap);
 	protect_uri(ctx, wsmand_options_get_service_path());
