@@ -48,7 +48,7 @@ shttpd_get_credentials(struct shttpd_arg *arg,
 		*user = u_strdup(pp);
 		*pwd = u_strdup(p);
 	}
-#ifdef SHHTPD_GSS
+#ifdef SHTTPD_GSS
     else if(!my_strncasecmp(auth_vec->ptr, "Kerberos ", 9))
     {
         getGssName(c, user);
