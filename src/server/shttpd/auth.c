@@ -10,7 +10,7 @@
 
 #include "shttpd_defs.h"
 #ifdef SHTTPD_GSS
-void do_gss(struct conn *c);
+int do_gss(struct conn *c);
 #endif
 
 #if !defined(NO_AUTH)
@@ -283,10 +283,14 @@ check_authorization(struct conn *c, const char *path)
 	basic_auth_callback cb = NULL;
 	char *p, *pp;
 	/* Check, is this URL protected by shttpd_protect_url() */
+
+	fprintf(stderr, "IGOR check_authorization \n");
 #ifdef SHTTPD_GSS
     /* already authenticated */
-	if(c->gss_ctx != GSS_C_NO_CONTEXT)
+	if(c->gss_ctx != GSS_C_NO_CONTEXT){
+		fprintf(stderr, "IGOR c->gss_ctx != GSS_C_NO_CONTEXT \n");
 		return 1;
+		}
 #endif
 
 	LL_FOREACH(&c->ctx->uri_auths, lp) {
@@ -295,6 +299,7 @@ check_authorization(struct conn *c, const char *path)
 #ifdef SHTTPD_GSS
 			if (!strncasecmp(auth_vec->ptr, "Kerberos ", 9))
 			{
+			fprintf(stderr, "IGOR kerberos = 1 \n");
 				kerberos = 1;
             }
 #endif
@@ -308,20 +313,28 @@ check_authorization(struct conn *c, const char *path)
 			    auth_vec->len > 10 &&
 			    !strncasecmp(auth_vec->ptr, "Basic ", 6)) {
 				cb = (int (*)(char *, char *)) auth->callback.v_func;
+				fprintf(stderr, "IGOR basic = 1 \n");
 				basic = 1;
 			}
 			break;
 		}
 	}
-	if (lp == &c->ctx->uri_auths) //not a protected uri
+	if (lp == &c->ctx->uri_auths){ //not a protected uri
+	fprintf(stderr, "IGOR uri_auths \n");
 		return 1;
+		}
 #ifdef SHTTPD_GSS
     if(kerberos == 1)
     {
-        do_gss(c);
+    fprintf(stderr, "IGOR do_gss \n");
+        int retval = do_gss(c);
+		fprintf(stderr, "IGOR do_gss returned %d\n", retval);
         return 2;
     }
 #endif
+
+	fprintf(stderr, "IGOR kerberos %d digest %d basic %d \n", kerberos, digest, basic);
+
 	if (digest == 1) {
 		if (fp != NULL) {
 				authorized = authorize_digest(c, fp);
@@ -365,10 +378,12 @@ check_authorization(struct conn *c, const char *path)
 		*p++ = 0;
 		authorized = cb(pp, p);
 	} else {
+		fprintf(stderr, "IGOR return 0 \n");
 		return 0;
 	}
 
 #endif /* EMBEDDED */
+	fprintf(stderr, "IGOR authorized %d \n", authorized);
 
 	return (authorized);
 }

@@ -33,6 +33,7 @@
 #include "shttpd_defs.h"
 
 #include <gssapi/gssapi_generic.h>
+#include <gssapi/gssapi_krb5.h>
 
 #define THE_END "\tContent-Type: application/octet-stream"
 #define FAKE_CT "Content-Type: application/soap+xml\r\n"
@@ -81,10 +82,12 @@ int getCreds(char *service_name, gss_cred_id_t *server_creds)
     gss_name_t server_name;
     OM_uint32 maj_stat, min_stat;
 
+	//gss_OID temp = "\052\206\110\206\367\022\001\002\002\001";
+
     name_buf.value = service_name;
     name_buf.length = strlen(name_buf.value) + 1;
-    maj_stat = gss_import_name(&min_stat, &name_buf,
-                               (gss_OID) GSS_C_NT_HOSTBASED_SERVICE, &server_name);
+    maj_stat = gss_import_name(&min_stat, &name_buf,                               
+							   (gss_OID) GSS_C_NT_HOSTBASED_SERVICE, &server_name);
     if (maj_stat != GSS_S_COMPLETE)
     {
         displayError("importing name", maj_stat, min_stat);
@@ -133,6 +136,8 @@ static int connectContext(
                                       0,
                                       0);
 
+	//fprintf(stderr, "IGOR Accept principal = %.*s", client_name->length, client_name->value);
+	fprintf(stderr, "IGOR Accept principal = %.32s", client_name->value);
 
     if (maj_stat != GSS_S_COMPLETE)
     {
@@ -155,8 +160,9 @@ int do_gss(struct conn *c)
     gss_buffer_desc client_name;
     gss_buffer_desc reply;
     OM_uint32 retflags;
-    if(getCreds("host@localhost", &gsscreds) != 0)
+    if(getCreds("HTTP/pocdev-esxi-01-vm3.igor.com@IGOR.COM", &gsscreds) != 0){
         return 0;
+    }
 
     // now find the beginning and end of the base64 encoded stuff
 
@@ -175,6 +181,7 @@ int do_gss(struct conn *c)
 
     if (pp == p)
     {
+	fprintf(stderr, "IGOR return 0, no base64 stuff \n");
         return 0;
     }
     *p = 0;
@@ -187,6 +194,7 @@ int do_gss(struct conn *c)
     int ret = connectContext(decbuf, l, gsscreds, &c->gss_ctx, &client_name, &reply, &retflags);
     if (ret != 0)
     {
+    fprintf(stderr, "IGOR send_server_error = %d", ret);
         send_server_error(c, 400, "Bad request");
         return 0;
     }
