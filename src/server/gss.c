@@ -87,7 +87,10 @@ int getCreds(char *service_name, gss_cred_id_t *server_creds)
     name_buf.value = service_name;
     name_buf.length = strlen(name_buf.value) + 1;
     maj_stat = gss_import_name(&min_stat, &name_buf,                               
-							   (gss_OID) GSS_C_NT_HOSTBASED_SERVICE, &server_name);
+							 //  (gss_OID) GSS_C_NULL_OID, &server_name);
+							 //(gss_OID) GSS_C_NT_USER_NAME, &server_name);
+							 (gss_OID) GSS_KRB5_NT_PRINCIPAL_NAME, &server_name);
+
     if (maj_stat != GSS_S_COMPLETE)
     {
         displayError("importing name", maj_stat, min_stat);
@@ -135,9 +138,6 @@ static int connectContext(
                                       ret_flags,
                                       0,
                                       0);
-
-	//fprintf(stderr, "IGOR Accept principal = %.*s", client_name->length, client_name->value);
-	fprintf(stderr, "IGOR Accept principal = %.32s", client_name->value);
 
     if (maj_stat != GSS_S_COMPLETE)
     {
@@ -190,6 +190,8 @@ int do_gss(struct conn *c)
 
     char decbuf[p - pp]; // this is too long but we dont care
     int l = ws_base64_decode(pp, p - pp, decbuf, 4095);
+
+	fprintf(stderr, "IGOR decbuf = %4095s", decbuf);
 
     int ret = connectContext(decbuf, l, gsscreds, &c->gss_ctx, &client_name, &reply, &retflags);
     if (ret != 0)
